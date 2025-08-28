@@ -9,7 +9,7 @@ RUN apt-get update -qq && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
-WORKDIR /myapp
+WORKDIR /upload
 
 # Copy Gemfile first for better caching
 COPY Gemfile Gemfile.lock ./

@@ -1,4 +1,5 @@
 <h1>Upload a file</h1>
 <div data-controller="files">
-  <button data-action="click->files#connect"> Upload </button>
+  <input type="file" data-files-target="fileInput" style="display:none;" multiple accept="*/*">
+  <button data-action="click->files#upload"> Upload </button>
 </div>

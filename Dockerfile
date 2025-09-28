@@ -6,6 +6,7 @@ RUN apt-get update -qq && apt-get install -y \
     postgresql-client \
     libyaml-dev \
     build-essential \
+    nano \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory

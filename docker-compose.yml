@@ -22,6 +22,7 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/upload_development
+      EDITOR: nano
 
 volumes:
   postgres_data:

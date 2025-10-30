@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   root "files#index"
 
-  resources :files, only: [:index] do
+  resources :files, only: [ :index ] do
     collection do
       post :presigned_url
     end

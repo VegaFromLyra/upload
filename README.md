@@ -2,8 +2,10 @@
 
 * Side project to learn about file upload implementation
 
+docker-compose exec web bundle install
 docker-compose build web
 docker-compose up web
+docker-compose exec web rails test
 
 # Install Claude
 

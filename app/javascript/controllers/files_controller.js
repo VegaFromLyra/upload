@@ -1,32 +1,60 @@
 import { Controller } from "@hotwired/stimulus"
 
+const MAX_FILE_SIZE = 1 * 1024 * 1024 // 1MB
+const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "application/pdf"
+]
+
 export default class extends Controller {
-  static targets = ["fileInput"]
+  static targets = ["fileInput", "status", "fileList"]
 
   upload() {
-    console.log("Select a file to upload")
     this.fileInputTarget.click()
   }
 
   connect() {
-    this.fileInputTarget.addEventListener('change', this.handleFileSelect.bind(this)) 
+    this.fileInputTarget.addEventListener("change", this.handleFileSelect.bind(this))
   }
 
   async handleFileSelect(event) {
-    const files = event.target.files
+    const file = event.target.files[0]
+    if (!file) return
 
-    const file = files[0]
+    this.clearStatus()
 
-    try {
-      const preSignedData = await this.getPresignedUrl(file)
-      console.log("Received pre signed url: ", preSignedData.url)
-    } catch(error) {
-      console.log("Upload failed:", error)
+    const error = this.validateFile(file)
+    if (error) {
+      this.showError(error)
+      this.fileInputTarget.value = ""
+      return
     }
 
-    this.getPresignedUrl(file)
+    this.showStatus(`Uploading ${file.name}...`, "uploading")
 
-    console.log("Files selected:", files)
+    try {
+      const presignedData = await this.getPresignedUrl(file)
+      await this.uploadToS3(file, presignedData)
+      this.showStatus(`${file.name} uploaded successfully!`, "success")
+      this.addFileToList(file.name)
+    } catch (error) {
+      this.showError(`Upload failed: ${error.message}`)
+    }
+
+    this.fileInputTarget.value = ""
+  }
+
+  validateFile(file) {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return "Invalid file type. Only images (JPEG, PNG, GIF, WebP) and PDFs are allowed."
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return "File size exceeds 1MB limit."
+    }
+    return null
   }
 
   async getPresignedUrl(file) {
@@ -44,9 +72,54 @@ export default class extends Controller {
     })
 
     if (!response.ok) {
-      throw new Error("Failed to get presigned url")
+      const data = await response.json()
+      throw new Error(data.error || "Failed to get presigned URL")
     }
 
     return response.json()
+  }
+
+  async uploadToS3(file, presignedData) {
+    const formData = new FormData()
+
+    Object.entries(presignedData.fields).forEach(([key, value]) => {
+      formData.append(key, value)
+    })
+    formData.append("file", file)
+
+    const response = await fetch(presignedData.url, {
+      method: "POST",
+      body: formData
+    })
+
+    if (!response.ok && response.status !== 204) {
+      throw new Error("Failed to upload file to S3")
+    }
+  }
+
+  showStatus(message, type) {
+    if (this.hasStatusTarget) {
+      this.statusTarget.textContent = message
+      this.statusTarget.className = `upload-status ${type}`
+    }
+  }
+
+  showError(message) {
+    this.showStatus(message, "error")
+  }
+
+  clearStatus() {
+    if (this.hasStatusTarget) {
+      this.statusTarget.textContent = ""
+      this.statusTarget.className = "upload-status"
+    }
+  }
+
+  addFileToList(filename) {
+    if (this.hasFileListTarget) {
+      const li = document.createElement("li")
+      li.textContent = filename
+      this.fileListTarget.appendChild(li)
+    }
   }
 }

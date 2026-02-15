@@ -13,3 +13,31 @@
  *= require_tree .
  *= require_self
  */
+
+.upload-status {
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.upload-status.error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+
+.upload-status.success {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+}
+
+.upload-status.uploading {
+  color: #856404;
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+}
+
+.upload-status:empty {
+  display: none;
+}

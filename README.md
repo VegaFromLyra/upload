@@ -6,7 +6,7 @@
 
 https://docs.claude.com/en/docs/claude-code/overview#install-and-authenticate
 
-## Dev Set up
+## Dev Set up and frequently used commands
 
 * docker-compose build web
 
@@ -17,3 +17,7 @@ https://docs.claude.com/en/docs/claude-code/overview#install-and-authenticate
 * docker-compose up web
 
 * docker-compose exec web rails test
+
+* docker-compose logs -f --tail=100 web
+
+* docker-compose exec web rails credentials:show

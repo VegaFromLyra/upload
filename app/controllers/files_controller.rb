@@ -28,7 +28,7 @@ class FilesController < ApplicationController
     end
 
     if presign_params[:file_size].to_i > S3PresignService::MAX_FILE_SIZE
-      render json: { error: "File size exceeds 1MB limit." }, status: :unprocessable_entity
+      render json: { error: "File size exceeds 3MB limit." }, status: :unprocessable_entity
     end
   end
 end

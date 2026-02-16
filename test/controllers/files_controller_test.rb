@@ -42,11 +42,11 @@ class FilesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "presigned_url rejects file exceeding size limit" do
-    post presigned_url_files_url, params: { filename: "big.png", content_type: "image/png", file_size: 2_000_000 }, as: :json
+    post presigned_url_files_url, params: { filename: "big.png", content_type: "image/png", file_size: 4_000_000 }, as: :json
 
     assert_response :unprocessable_entity
     json = JSON.parse(response.body)
-    assert_match(/1MB/i, json["error"])
+    assert_match(/3MB/i, json["error"])
   end
 
   test "presigned_url rejects missing parameters" do

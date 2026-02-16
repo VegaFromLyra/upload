@@ -29,8 +29,8 @@ class S3PresignServiceTest < ActiveSupport::TestCase
     assert_not S3PresignService.valid_content_type?("application/zip")
   end
 
-  test "MAX_FILE_SIZE is 1 megabyte" do
-    assert_equal 1.megabyte, S3PresignService::MAX_FILE_SIZE
+  test "MAX_FILE_SIZE is 3 megabytes" do
+    assert_equal 3.megabytes, S3PresignService::MAX_FILE_SIZE
   end
 
   test "presigned_url returns url and fields" do
@@ -42,7 +42,7 @@ class S3PresignServiceTest < ActiveSupport::TestCase
     mock_bucket.expect(:presigned_post, mock_post) do |**kwargs|
       kwargs[:key].is_a?(String) &&
         kwargs[:content_type] == "image/png" &&
-        kwargs[:content_length_range] == (1..1.megabyte)
+        kwargs[:content_length_range] == (1..3.megabytes)
     end
 
     service = S3PresignService.new(bucket: mock_bucket)

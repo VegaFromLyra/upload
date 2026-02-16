@@ -1,5 +1,5 @@
 class S3PresignService
-  MAX_FILE_SIZE = 1.megabyte
+  MAX_FILE_SIZE = 3.megabytes
   ALLOWED_CONTENT_TYPES = %w[
     image/jpeg
     image/png

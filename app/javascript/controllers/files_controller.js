@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 
-const MAX_FILE_SIZE = 1 * 1024 * 1024 // 1MB
+const MAX_FILE_SIZE = 3 * 1024 * 1024 // 3MB
 const ALLOWED_TYPES = [
   "image/jpeg",
   "image/png",
@@ -57,7 +57,7 @@ export default class extends Controller {
       return "Invalid file type. Only images (JPEG, PNG, GIF, WebP) and PDFs are allowed."
     }
     if (file.size > MAX_FILE_SIZE) {
-      return "File size exceeds 1MB limit."
+      return "File size exceeds 3MB limit."
     }
     return null
   }

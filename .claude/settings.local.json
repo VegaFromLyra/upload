@@ -5,7 +5,14 @@
       "Bash(git commit:*)",
       "Bash(find:*)",
       "Bash(docker-compose exec:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(ruby --version:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr checks:*)",
+      "WebSearch",
+      "Bash(gh pr merge:*)",
+      "Bash(git pull:*)"
     ]
   }
 }

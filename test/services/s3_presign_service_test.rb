@@ -45,12 +45,11 @@ class S3PresignServiceTest < ActiveSupport::TestCase
         kwargs[:content_length_range] == (1..1.megabyte)
     end
 
-    S3PresignService.stub :s3_bucket, mock_bucket do
-      result = S3PresignService.presigned_url(filename: "test.png", content_type: "image/png")
+    service = S3PresignService.new(bucket: mock_bucket)
+    result = service.presigned_url(filename: "test.png", content_type: "image/png")
 
-      assert result[:url].present?
-      assert result[:fields].present?
-    end
+    assert result[:url].present?
+    assert result[:fields].present?
 
     mock_post.verify
     mock_bucket.verify

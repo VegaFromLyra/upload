@@ -8,34 +8,36 @@ class S3PresignService
     application/pdf
   ].freeze
 
-  class << self
-    def presigned_url(filename:, content_type:)
-      key = "uploads/#{SecureRandom.uuid}/#{filename}"
+  def self.valid_content_type?(content_type)
+    ALLOWED_CONTENT_TYPES.include?(content_type)
+  end
 
-      presigned_post = s3_bucket.presigned_post(
-        key: key,
-        content_type: content_type,
-        content_length_range: 1..MAX_FILE_SIZE,
-        metadata: { "original-filename" => filename }
-      )
+  def initialize(bucket: nil)
+    @bucket = bucket || default_bucket
+  end
 
-      { url: presigned_post.url, fields: presigned_post.fields }
-    end
+  def presigned_url(filename:, content_type:)
+    key = "uploads/#{SecureRandom.uuid}/#{filename}"
 
-    def valid_content_type?(content_type)
-      ALLOWED_CONTENT_TYPES.include?(content_type)
-    end
+    presigned_post = @bucket.presigned_post(
+      key: key,
+      content_type: content_type,
+      content_length_range: 1..MAX_FILE_SIZE,
+      metadata: { "original-filename" => filename }
+    )
 
-    private
+    { url: presigned_post.url, fields: presigned_post.fields }
+  end
 
-    def s3_bucket
-      credentials = Rails.application.credentials.aws
-      client = Aws::S3::Client.new(
-        region: credentials[:region],
-        access_key_id: credentials[:access_key_id],
-        secret_access_key: credentials[:secret_access_key]
-      )
-      Aws::S3::Resource.new(client: client).bucket(credentials[:bucket_name])
-    end
+  private
+
+  def default_bucket
+    credentials = Rails.application.credentials.aws
+    client = Aws::S3::Client.new(
+      region: credentials[:region],
+      access_key_id: credentials[:access_key_id],
+      secret_access_key: credentials[:secret_access_key]
+    )
+    Aws::S3::Resource.new(client: client).bucket(credentials[:bucket_name])
   end
 end

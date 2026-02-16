@@ -17,7 +17,12 @@ export default class extends Controller {
   }
 
   connect() {
-    this.fileInputTarget.addEventListener("change", this.handleFileSelect.bind(this))
+    this.boundHandleFileSelect = this.handleFileSelect.bind(this)
+    this.fileInputTarget.addEventListener("change", this.boundHandleFileSelect)
+  }
+
+  disconnect() {
+    this.fileInputTarget.removeEventListener("change", this.boundHandleFileSelect)
   }
 
   async handleFileSelect(event) {

@@ -8,7 +8,10 @@ class FilesControllerTest < ActionDispatch::IntegrationTest
 
   test "presigned_url returns presigned data for valid image" do
     mock_response = { url: "https://bucket.s3.amazonaws.com", fields: { "key" => "uploads/test.png" } }
-    S3PresignService.stub :presigned_url, mock_response do
+    mock_service = Minitest::Mock.new
+    mock_service.expect(:presigned_url, mock_response, [], filename: "test.png", content_type: "image/png")
+
+    S3PresignService.stub :new, mock_service do
       post presigned_url_files_url, params: { filename: "test.png", content_type: "image/png", file_size: 500_000 }, as: :json
     end
 
@@ -20,7 +23,10 @@ class FilesControllerTest < ActionDispatch::IntegrationTest
 
   test "presigned_url returns presigned data for valid pdf" do
     mock_response = { url: "https://bucket.s3.amazonaws.com", fields: { "key" => "uploads/doc.pdf" } }
-    S3PresignService.stub :presigned_url, mock_response do
+    mock_service = Minitest::Mock.new
+    mock_service.expect(:presigned_url, mock_response, [], filename: "doc.pdf", content_type: "application/pdf")
+
+    S3PresignService.stub :new, mock_service do
       post presigned_url_files_url, params: { filename: "doc.pdf", content_type: "application/pdf", file_size: 800_000 }, as: :json
     end
 
@@ -58,9 +64,12 @@ class FilesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "presigned_url accepts all allowed image types" do
-    mock_response = { url: "https://bucket.s3.amazonaws.com", fields: { "key" => "uploads/test" } }
     %w[image/jpeg image/png image/gif image/webp].each do |content_type|
-      S3PresignService.stub :presigned_url, mock_response do
+      mock_response = { url: "https://bucket.s3.amazonaws.com", fields: { "key" => "uploads/test" } }
+      mock_service = Minitest::Mock.new
+      mock_service.expect(:presigned_url, mock_response, [], filename: "test", content_type: content_type)
+
+      S3PresignService.stub :new, mock_service do
         post presigned_url_files_url, params: { filename: "test", content_type: content_type, file_size: 100 }, as: :json
       end
 

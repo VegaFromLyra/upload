@@ -63,10 +63,10 @@ docker-compose exec web rails db:reset
 - **Importmap:** Manages JavaScript dependencies without bundling
 
 **Backend Structure:**
-- **FilesController:** Currently returns mock S3 presigned URL data (not yet connected to real AWS S3)
+- **FilesController:** Uses `before_action` for validation, delegates to S3PresignService
+- **S3PresignService:** Instance-based service with dependency injection for the S3 bucket
 - **Active Storage:** Configured but not yet integrated (see `config/storage.yml`)
 - **AWS SDK:** `aws-sdk-s3` gem included for S3 integration
-
 
 ### Development Environment
 
@@ -79,11 +79,40 @@ docker-compose exec web rails db:reset
 
 ## Current Implementation Status
 
-This is a learning project with basic file upload UI and presigned URL endpoint structure in place. The S3 integration returns mock data and needs to be implemented with real AWS credentials and bucket configuration.
+This is a learning project with basic file upload UI and presigned URL endpoint structure in place. The S3 integration requires real AWS credentials configured via `rails credentials:edit`.
 
 ## Testing Approach
 
 Uses standard Rails testing with:
-- `test/controllers/` - Controller tests
+- `test/controllers/` - Controller integration tests
+- `test/services/` - Service unit tests
 - `test/system/` - System/integration tests (Capybara + Selenium)
 - `test/test_helper.rb` - Test configuration
+
+## Best Practice Conventions
+
+### Controllers
+- Use `before_action` callbacks for validation and authorization
+- Use `params.permit` (strong params) for all parameter access
+- Keep controllers thin — delegate business logic to service objects
+- Return early from validation failures in before_action
+
+### Service Objects
+- Place services in `app/services/`
+- Use instance methods (not class methods) for the primary interface
+- Use dependency injection for external collaborators (e.g., S3 bucket)
+- Keep class methods only for stateless utilities (e.g., `valid_content_type?`)
+- Constructor injection makes services testable without stubbing private methods
+
+### Testing
+- Inject mock dependencies via constructor instead of stubbing private methods
+- Use `Minitest::Mock` for mock objects
+- Stub `ClassName.new` in integration tests to inject mock services
+- Test validation edge cases: missing params, invalid types, boundary values
+- Run `rubocop` before committing to ensure style consistency
+
+### Stimulus Controllers
+- Always clean up event listeners in `disconnect()` to prevent memory leaks
+- Store bound references for later removal (e.g., `this.boundHandler = this.handler.bind(this)`)
+- Use Stimulus targets and actions over manual DOM queries where possible
+- Keep client-side validation in sync with server-side rules

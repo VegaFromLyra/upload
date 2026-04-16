@@ -17,12 +17,14 @@ export default class extends Controller {
   }
 
   connect() {
+    this.objectUrls = []
     this.boundHandleFileSelect = this.handleFileSelect.bind(this)
     this.fileInputTarget.addEventListener("change", this.boundHandleFileSelect)
   }
 
   disconnect() {
     this.fileInputTarget.removeEventListener("change", this.boundHandleFileSelect)
+    this.revokeObjectUrls()
   }
 
   async handleFileSelect(event) {
@@ -44,7 +46,7 @@ export default class extends Controller {
       const presignedData = await this.getPresignedUrl(file)
       await this.uploadToS3(file, presignedData)
       this.showStatus(`${file.name} uploaded successfully!`, "success")
-      this.addFileToList(file.name)
+      this.addFileToGrid(file)
     } catch (error) {
       this.showError(`Upload failed: ${error.message}`)
     }
@@ -120,11 +122,43 @@ export default class extends Controller {
     }
   }
 
-  addFileToList(filename) {
-    if (this.hasFileListTarget) {
-      const li = document.createElement("li")
-      li.textContent = filename
-      this.fileListTarget.appendChild(li)
+  addFileToGrid(file) {
+    if (!this.hasFileListTarget) return
+
+    const card = document.createElement("div")
+    card.className = "file-card"
+
+    const thumbnail = document.createElement("div")
+    thumbnail.className = "file-card-thumbnail"
+
+    if (file.type.startsWith("image/")) {
+      const img = document.createElement("img")
+      const objectUrl = URL.createObjectURL(file)
+      img.src = objectUrl
+      img.alt = file.name
+      this.objectUrls.push(objectUrl)
+      thumbnail.appendChild(img)
+    } else {
+      const icon = document.createElement("span")
+      icon.className = "pdf-icon"
+      icon.textContent = "PDF"
+      thumbnail.appendChild(icon)
+    }
+
+    const name = document.createElement("div")
+    name.className = "file-card-name"
+    name.textContent = file.name
+    name.title = file.name
+
+    card.appendChild(thumbnail)
+    card.appendChild(name)
+    this.fileListTarget.appendChild(card)
+  }
+
+  revokeObjectUrls() {
+    if (this.objectUrls) {
+      this.objectUrls.forEach(url => URL.revokeObjectURL(url))
+      this.objectUrls = []
     }
   }
 }
